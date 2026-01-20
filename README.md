@@ -8,8 +8,9 @@ Inspired by [Wes Bos's Eye Ballz](https://github.com/wesbos/eye-ballz) project, 
 ## How It Works
 
 1. Upload a photo with a face
-2. The app generates a grid of images at different head angles using [fofr/expression-editor](https://replicate.com/fofr/expression-editor) on Replicate
-3. As you move your mouse over the viewer, it swaps between images to create a 3D rotation effect
+2. The app first preprocesses your photo using [google/nano-banana-pro](https://replicate.com/google/nano-banana-pro) to create a stylized 3D Pixar-style portrait
+3. Then it generates a grid of images at different head angles using [fofr/expression-editor](https://replicate.com/fofr/expression-editor)
+4. As you move your mouse over the viewer, it swaps between images to create a 3D rotation effect
 
 ## Getting Started
 
@@ -58,6 +59,7 @@ Each image costs ~$0.01 on Replicate. A 5x5 grid costs ~$0.25, a 7x7 grid costs 
 
 - [Next.js](https://nextjs.org/) - React framework
 - [Replicate](https://replicate.com/) - AI model hosting
+- [google/nano-banana-pro](https://replicate.com/google/nano-banana-pro) - 3D portrait stylization
 - [fofr/expression-editor](https://replicate.com/fofr/expression-editor) - Head rotation model
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
 - [shadcn/ui](https://ui.shadcn.com/) - UI components

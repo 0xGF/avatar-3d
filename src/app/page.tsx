@@ -12,7 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { calculateCost, type Step } from "@/lib/constants";
-import { Loader2, Sparkles, Box, Square, User, Download } from "lucide-react";
+import { Loader2, Sparkles, Box, Square, User, Download, Wand2 } from "lucide-react";
 import Image from "next/image";
 
 interface GeneratedImage {
@@ -22,10 +22,11 @@ interface GeneratedImage {
   index?: number;
 }
 
-type GenerationStatus = "idle" | "generating" | "complete" | "error";
+type GenerationStatus = "idle" | "preprocessing" | "generating" | "complete" | "error";
 
 export default function Home() {
-  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [originalImageBase64, setOriginalImageBase64] = useState<string | null>(null);
+  const [processedImageBase64, setProcessedImageBase64] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [xSteps, setXSteps] = useState(5);
   const [ySteps, setYSteps] = useState(5);
@@ -38,30 +39,60 @@ export default function Home() {
   const estimatedCost = calculateCost(xSteps, ySteps);
   const totalImages = xSteps * ySteps;
 
+  // Use processed image for generation, fall back to original
+  const imageBase64 = processedImageBase64 || originalImageBase64;
+
   const handleImageSelect = useCallback((base64: string, preview: string) => {
-    setImageBase64(base64);
+    setOriginalImageBase64(base64);
+    setProcessedImageBase64(null);
     setPreviewUrl(preview);
     setGeneratedImages([]);
     setStatus("idle");
     setProgress(0);
-    toast.success("Image uploaded");
   }, []);
 
   const handleGenerate = useCallback(async () => {
-    if (!imageBase64) return;
+    if (!originalImageBase64) return;
 
-    setStatus("generating");
+    setStatus("preprocessing");
     setProgress(0);
     setGeneratedImages([]);
 
-    const toastId = toast.loading("Starting generation...");
+    const toastId = toast.loading("Creating avatar portrait...");
+
+    let imageToUse = originalImageBase64;
+
+    // Step 1: Preprocess the image
+    try {
+      const preprocessResponse = await fetch("/api/preprocess", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: originalImageBase64 }),
+      });
+
+      if (preprocessResponse.ok) {
+        const preprocessData = await preprocessResponse.json();
+        imageToUse = preprocessData.imageBase64;
+        setProcessedImageBase64(imageToUse);
+        setPreviewUrl(`data:image/png;base64,${imageToUse}`);
+        toast.loading("Portrait ready, generating frames...", { id: toastId });
+      } else {
+        toast.loading("Using original image...", { id: toastId });
+      }
+    } catch (err) {
+      console.error("Preprocessing error:", err);
+      toast.loading("Using original image...", { id: toastId });
+    }
+
+    // Step 2: Generate avatar frames
+    setStatus("generating");
 
     try {
       const response = await fetch("/api/generate/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          imageBase64,
+          imageBase64: imageToUse,
           xSteps,
           ySteps,
           prefix: "avatar",
@@ -121,7 +152,11 @@ export default function Home() {
       const message = err instanceof Error ? err.message : "An error occurred";
       toast.error("Generation failed", { id: toastId, description: message });
     }
-  }, [imageBase64, xSteps, ySteps]);
+  }, [originalImageBase64, xSteps, ySteps]);
+
+  const isPreprocessing = status === "preprocessing";
+  const isGenerating = status === "generating";
+  const isBusy = isPreprocessing || isGenerating;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -138,7 +173,7 @@ export default function Home() {
 
             <ImageUpload
               onImageSelect={handleImageSelect}
-              disabled={status === "generating"}
+              disabled={isBusy}
             />
 
             <Card className="p-4">
@@ -154,7 +189,7 @@ export default function Home() {
                     min={3}
                     max={10}
                     step={1}
-                    disabled={status === "generating"}
+                    disabled={isBusy}
                   />
                 </div>
 
@@ -169,7 +204,7 @@ export default function Home() {
                     min={3}
                     max={10}
                     step={1}
-                    disabled={status === "generating"}
+                    disabled={isBusy}
                   />
                 </div>
 
@@ -182,12 +217,17 @@ export default function Home() {
                   <Button
                     className="w-full"
                     onClick={handleGenerate}
-                    disabled={!imageBase64 || status === "generating"}
+                    disabled={!originalImageBase64 || isBusy}
                   >
-                    {status === "generating" ? (
+                    {isGenerating ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Generating
+                      </>
+                    ) : isPreprocessing ? (
+                      <>
+                        <Wand2 className="mr-2 h-4 w-4 animate-pulse" />
+                        Creating Portrait
                       </>
                     ) : (
                       <>
@@ -196,7 +236,7 @@ export default function Home() {
                       </>
                     )}
                   </Button>
-                  {status === "generating" && (
+                  {isGenerating && (
                     <Progress value={progress} className="h-1 absolute -bottom-2 left-0 right-0" />
                   )}
                 </div>
@@ -256,17 +296,23 @@ export default function Home() {
                   />
                 )
               ) : previewUrl ? (
-                <Card className="aspect-square overflow-hidden relative">
+                <Card className="aspect-square overflow-hidden relative bg-black">
                   <Image
                     src={previewUrl}
                     alt="Preview"
                     fill
-                    className="object-cover"
+                    className="object-contain"
                   />
-                  {status === "generating" && (
+                  {isPreprocessing && (
+                    <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
+                      <Wand2 className="h-8 w-8 text-white mb-2 animate-pulse" />
+                      <p className="text-sm text-white">Creating portrait...</p>
+                    </div>
+                  )}
+                  {isGenerating && (
                     <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
                       <Loader2 className="h-8 w-8 animate-spin text-white mb-2" />
-                      <p className="text-sm text-white">Processing... {Math.round(progress)}%</p>
+                      <p className="text-sm text-white">Generating... {Math.round(progress)}%</p>
                     </div>
                   )}
                 </Card>
