@@ -4,8 +4,7 @@ Generate interactive 3D avatar views from a single photo using AI. Move your mou
 
 ## Inspiration
 
-Inspired by [Wes Bos's Eye Ballz](https://github.com/wesbos/eye-ballz) project, which creates interactive eye-tracking avatars. This project takes it further by generating full head rotation with adjustable parameters.
-
+Inspired by [Wes Bos's Eye Ballz](https://github.com/wesbos/eye-ballz) project, which creates interactive eye-tracking avatars. This project takes it further by enabling easy upload and running.
 ## How It Works
 
 1. Upload a photo with a face
