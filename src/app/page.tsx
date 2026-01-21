@@ -304,8 +304,8 @@ export default function Home() {
                         value={[meshQuality]}
                         onValueChange={([value]) => setMeshQuality(value)}
                         min={0.5}
-                        max={1}
-                        step={0.1}
+                        max={0.98}
+                        step={0.08}
                         disabled={isBusy}
                       />
                     </div>

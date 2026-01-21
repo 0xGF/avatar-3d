@@ -6,7 +6,7 @@ import Replicate from "replicate";
 export const MODELS = {
   EXPRESSION_EDITOR:
     "fofr/expression-editor:bf913bc90e1c44ba288ba3942a538693b72e8cc7df576f3beebe56adc0a92b86",
-  NANO_BANANA_PRO: "google/nano-banana-pro",
+  NANO_BANANA_PRO: "google/nano-banana",
   TRELLIS:
     "firtoz/trellis:e8f6c45206993f297372f5436b90350817bd9b4a0d52d2a76df50c1c8afa2b3c",
 } as const;
