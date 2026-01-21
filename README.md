@@ -1,7 +1,5 @@
 # Avatar 3D
 
-[![GitHub stars](https://img.shields.io/github/stars/0xGF/avatar-3d?style=social)](https://github.com/0xGF/avatar-3d)
-
 Generate interactive 3D avatars from a single photo using AI. Choose between cursor-tracking rotation or full 3D model export.
 
 ## Features
@@ -81,6 +79,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
   - [firtoz/trellis](https://replicate.com/firtoz/trellis) - Image to 3D model
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
 - [shadcn/ui](https://ui.shadcn.com/) - UI components
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=0xGF/avatar-3d&type=Date)](https://star-history.com/#0xGF/avatar-3d&Date)
 
 ## License
 
