@@ -7,9 +7,16 @@ import {
   refreshRenderCache,
   deleteRender,
   clearAllRenders,
+  MAX_RENDERS,
   type SavedRender,
 } from "@/lib/storage";
-import { Box, MousePointer2, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Box, MousePointer2, X, ChevronDown, ChevronUp, Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface RenderHistoryProps {
   onLoadRender?: (render: SavedRender) => void;
@@ -69,7 +76,22 @@ export function RenderHistory({ onLoadRender, refreshTrigger }: RenderHistoryPro
   return (
     <Card className="p-3">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium">Recent Renders</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Recent Renders</span>
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-xs text-muted-foreground cursor-help flex items-center gap-1">
+                  {renders.length}/{MAX_RENDERS}
+                  <Info className="h-3 w-3" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[200px]">
+                <p className="text-xs">Stores up to {MAX_RENDERS} renders locally. Oldest renders are automatically removed when limit is reached.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <div className="flex gap-1">
           {renders.length > 4 && (
             <Button

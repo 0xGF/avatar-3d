@@ -30,7 +30,7 @@ export interface UserSettings {
   defaultMeshQuality: number;
 }
 
-const MAX_RENDERS = 10;
+export const MAX_RENDERS = 10;
 const THUMBNAIL_SIZE = 200;
 
 /**
