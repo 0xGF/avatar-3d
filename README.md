@@ -1,16 +1,28 @@
 # Avatar 3D
 
-Generate interactive 3D avatar views from a single photo using AI. Move your mouse to rotate the head in real-time.
+Generate interactive 3D avatars from a single photo using AI. Choose between cursor-tracking rotation or full 3D model export.
+
+## Features
+
+- **Two Generation Modes:**
+  - **Cursor Tracking** - Generate a grid of head rotation frames for mouse-follow effect
+  - **3D Model** - Generate an actual GLB 3D model you can use in Blender, Unity, etc.
+- **Pixar-Style Preprocessing** - Photos are transformed into stylized 3D characters
+- **Custom Style Prompts** - Add accessories, change styles (cyberpunk, cartoon villain, etc.)
+- **Export Options** - Download GLB files, HTML embeds, individual frames, or React components
 
 ## Inspiration
 
-Inspired by [Wes Bos's Eye Ballz](https://github.com/wesbos/eye-ballz) project, which creates interactive eye-tracking avatars. This project takes it further by enabling easy upload and running.
+Inspired by [Wes Bos's Eye Ballz](https://github.com/wesbos/eye-ballz) project, which creates interactive eye-tracking avatars. This project extends the concept with AI-powered stylization and true 3D model generation.
+
 ## How It Works
 
 1. Upload a photo with a face
-2. The app first preprocesses your photo using [google/nano-banana-pro](https://replicate.com/google/nano-banana-pro) to create a stylized 3D Pixar-style portrait
-3. Then it generates a grid of images at different head angles using [fofr/expression-editor](https://replicate.com/fofr/expression-editor)
-4. As you move your mouse over the viewer, it swaps between images to create a 3D rotation effect
+2. The app preprocesses your photo using [google/nano-banana-pro](https://replicate.com/google/nano-banana-pro) to create a Pixar-style 3D character
+3. Based on your selected mode:
+   - **Cursor Tracking**: Generates a grid of images at different head angles using [fofr/expression-editor](https://replicate.com/fofr/expression-editor)
+   - **3D Model**: Generates a GLB model using [firtoz/trellis](https://replicate.com/firtoz/trellis)
+4. Preview and export your creation
 
 ## Getting Started
 
@@ -23,7 +35,7 @@ Inspired by [Wes Bos's Eye Ballz](https://github.com/wesbos/eye-ballz) project, 
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/avatar-3d.git
+git clone https://github.com/0xGF/avatar-3d.git
 cd avatar-3d
 
 # Install dependencies
@@ -43,24 +55,28 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Configuration
 
-Adjust the grid size and rotation range in the UI:
+### Cursor Tracking Mode
+- **Horizontal/Vertical Steps**: Number of images in each direction (5x5 = 25 frames)
+- Higher step counts = smoother rotation but more API calls
 
-- **X Steps / Y Steps**: Number of images in each direction (5x5 = 25 images)
-- **Yaw Range**: Horizontal rotation range in degrees
-- **Pitch Range**: Vertical rotation range in degrees
+### 3D Model Mode
+- **Texture Size**: Resolution of the model texture (512-2048px)
+- **Mesh Quality**: Detail level of the 3D mesh (50-100%)
 
-Higher step counts = smoother rotation but more API calls and longer generation time.
+## Cost Estimates
 
-## Cost
-
-Each image costs ~$0.01 on Replicate. A 5x5 grid costs ~$0.25, a 7x7 grid costs ~$0.49.
+- **Preprocessing**: ~$0.01 per image
+- **Cursor Tracking**: ~$0.01 per frame (5x5 grid ≈ $0.25)
+- **3D Model**: ~$0.05-0.10 per generation
 
 ## Tech Stack
 
 - [Next.js](https://nextjs.org/) - React framework
+- [Three.js](https://threejs.org/) - 3D model rendering
 - [Replicate](https://replicate.com/) - AI model hosting
-- [google/nano-banana-pro](https://replicate.com/google/nano-banana-pro) - 3D portrait stylization
-- [fofr/expression-editor](https://replicate.com/fofr/expression-editor) - Head rotation model
+  - [google/nano-banana-pro](https://replicate.com/google/nano-banana-pro) - Pixar-style transformation
+  - [fofr/expression-editor](https://replicate.com/fofr/expression-editor) - Head rotation frames
+  - [firtoz/trellis](https://replicate.com/firtoz/trellis) - Image to 3D model
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
 - [shadcn/ui](https://ui.shadcn.com/) - UI components
 
