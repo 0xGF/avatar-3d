@@ -286,11 +286,11 @@ export default function Home() {
                         <Badge variant="secondary" className="font-mono text-xs">{textureSize}px</Badge>
                       </div>
                       <Slider
-                        value={[textureSize]}
-                        onValueChange={([value]) => setTextureSize(value)}
-                        min={512}
-                        max={2048}
-                        step={512}
+                        value={[Math.log2(textureSize) - 9]}
+                        onValueChange={([value]) => setTextureSize(Math.pow(2, value + 9))}
+                        min={0}
+                        max={2}
+                        step={1}
                         disabled={isBusy}
                       />
                     </div>
