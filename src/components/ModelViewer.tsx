@@ -42,11 +42,12 @@ export function ModelViewer({ glbBase64, glbUrl }: ModelViewerProps) {
         camera.position.set(0, 0.5, 2.5);
         cameraRef.current = camera;
 
-        // Renderer - no tone mapping for accurate colors
+        // Renderer with neutral tone mapping
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(width, height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.toneMapping = THREE.NoToneMapping;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         container.appendChild(renderer.domElement);
         rendererRef.current = renderer;
@@ -60,26 +61,35 @@ export function ModelViewer({ glbBase64, glbUrl }: ModelViewerProps) {
         controls.target.set(0, 0, 0);
         controlsRef.current = controls;
 
-        // Lighting - even from all sides
-        // Very strong ambient for base brightness
-        const ambientLight = new THREE.AmbientLight(0xffffff, 4);
+        // Studio-style 3-point lighting for natural look
+        // Soft ambient fill
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
 
-        // 6-point lighting rig for even coverage
-        const lightPositions = [
-            [5, 5, 5],    // front-right-top
-            [-5, 5, 5],   // front-left-top
-            [5, 5, -5],   // back-right-top
-            [-5, 5, -5],  // back-left-top
-            [0, -5, 0],   // bottom
-            [0, 5, 0],    // top
-        ];
+        // Hemisphere light for natural sky/ground gradient
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
+        hemiLight.position.set(0, 20, 0);
+        scene.add(hemiLight);
 
-        lightPositions.forEach((pos) => {
-            const light = new THREE.DirectionalLight(0xffffff, 2);
-            light.position.set(pos[0], pos[1], pos[2]);
-            scene.add(light);
-        });
+        // Key light - main light from front-right
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        keyLight.position.set(3, 4, 5);
+        scene.add(keyLight);
+
+        // Fill light - softer from front-left
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        fillLight.position.set(-3, 2, 4);
+        scene.add(fillLight);
+
+        // Rim/back light - for edge definition
+        const rimLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        rimLight.position.set(0, 3, -5);
+        scene.add(rimLight);
+
+        // Bottom fill to reduce harsh shadows
+        const bottomFill = new THREE.DirectionalLight(0xffffff, 0.3);
+        bottomFill.position.set(0, -3, 2);
+        scene.add(bottomFill);
 
         // Animation loop
         const animate = () => {
@@ -168,20 +178,18 @@ export function ModelViewer({ glbBase64, glbUrl }: ModelViewerProps) {
 
                 const model = gltf.scene;
 
-                // Boost material brightness
+                // Fix material settings for proper color rendering
                 model.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
                         const material = child.material as THREE.MeshStandardMaterial;
                         if (material.isMeshStandardMaterial) {
-                            // Boost the color
+                            // Ensure texture color space is correct
                             if (material.map) {
                                 material.map.colorSpace = THREE.SRGBColorSpace;
                             }
-                            // Reduce roughness for more reflections
-                            material.roughness = Math.min(material.roughness, 0.5);
-                            // Add some emissive to brighten
-                            material.emissive = material.color.clone().multiplyScalar(0.3);
-                            material.emissiveIntensity = 0.5;
+                            // Keep natural roughness but ensure minimum reflectivity
+                            material.roughness = Math.max(0.3, Math.min(material.roughness, 0.8));
+                            material.metalness = Math.min(material.metalness, 0.1);
                             material.needsUpdate = true;
                         }
                     }
